@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row fade-in">
+    <div class="col-12 mb-4">
+        <h1>Search Results</h1>
+        
+        <!-- Search Form -->
+        <form method="get" action="{{ url_for('search') }}" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="query" class="form-control" placeholder="Search for posts..." value="{{ query }}">
+                <button class="btn btn-primary" type="submit">
+                    <i class="fas fa-search me-1"></i> Search
+                </button>
+            </div>
+        </form>
+        
+        {% if query %}
+            <!-- Results Summary -->
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> 
+                Found {{ posts|length }} result{% if posts|length != 1 %}s{% endif %} for "<strong>{{ query }}</strong>"
+            </div>
+            
+            <!-- Results List -->
+            {% if posts %}
+                <div class="row">
+                    {% for post in posts %}
+                        <div class="col-md-6 col-lg-4 mb-4 stagger-item">
+                            <div class="card h-100 post-card bg-dark">
+                                {% if post.featured_image %}
+                                    <img src="{{ post.featured_image }}" class="card-img-top" alt="{{ post.title }}">
+                                {% else %}
+                                    <div class="card-img-top bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                                        <i class="fas fa-newspaper fa-4x"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="card-body d-flex flex-column">
+                                    <div>
+                                        {% for category in post.categories %}
+                                            <a href="{{ url_for('category', category_id=category.id) }}" class="badge bg-primary text-decoration-none me-1 category-badge">{{ category.name }}</a>
+                                        {% endfor %}
+                                    </div>
+                                    <h5 class="card-title mt-2">
+                                        <a href="{{ url_for('post', slug=post.slug) }}" class="text-decoration-none text-white">{{ post.title }}</a>
+                                    </h5>
+                                    {% if post.summary %}
+                                        <p class="card-text">{{ post.summary }}</p>
+                                    {% else %}
+                                        <p class="card-text">{{ post.content|striptags|truncate(150) }}</p>
+                                    {% endif %}
+                                    <div class="mt-auto d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <img src="{{ post.author.avatar }}" class="avatar-sm me-2" alt="{{ post.author.username }}">
+                                            <small class="text-muted">{{ post.author.username }}</small>
+                                        </div>
+                                        <small class="text-muted">{{ post.created_at.strftime('%b %d, %Y') }}</small>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <a href="{{ url_for('post', slug=post.slug) }}" class="btn btn-sm btn-outline-light w-100">Read More</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-4x mb-3 text-muted"></i>
+                    <h3 class="mb-3">No posts found</h3>
+                    <p class="text-muted mb-4">Try different keywords or check your spelling</p>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-hover-effect">Back to Home</a>
+                </div>
+            {% endif %}
+        {% else %}
+            <!-- No Search Query -->
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-4x mb-3 text-muted"></i>
+                <h3 class="mb-3">Search for Posts</h3>
+                <p class="text-muted mb-4">Enter keywords to find posts</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

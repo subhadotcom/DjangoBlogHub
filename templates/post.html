@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center fade-in">
+    <div class="col-lg-10">
+        <!-- Post Header -->
+        <header class="mb-4">
+            <!-- Categories -->
+            <div class="mb-2">
+                {% for category in post.categories %}
+                    <a href="{{ url_for('category', category_id=category.id) }}" class="badge bg-primary text-decoration-none me-1 category-badge">{{ category.name }}</a>
+                {% endfor %}
+            </div>
+            
+            <!-- Title -->
+            <h1 class="display-4 fw-bold">{{ post.title }}</h1>
+            
+            <!-- Author and Date -->
+            <div class="d-flex align-items-center mb-4">
+                <img src="{{ post.author.avatar }}" alt="{{ post.author.username }}" class="avatar-sm me-2">
+                <div>
+                    <a href="{{ url_for('profile', username=post.author.username) }}" class="text-decoration-none text-white">{{ post.author.username }}</a>
+                    <div class="text-muted small">
+                        Published: {{ post.created_at.strftime('%B %d, %Y') }}
+                        {% if post.created_at != post.updated_at %}
+                            • Updated: {{ post.updated_at.strftime('%B %d, %Y') }}
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Edit/Delete Buttons (for author only) -->
+                {% if current_user.is_authenticated and current_user.id == post.author.id %}
+                    <div class="ms-auto">
+                        <a href="{{ url_for('edit_post', slug=post.slug) }}" class="btn btn-sm btn-outline-primary me-2">
+                            <i class="fas fa-edit me-1"></i> Edit
+                        </a>
+                        <form action="{{ url_for('delete_post', slug=post.slug) }}" method="POST" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger delete-confirm">
+                                <i class="fas fa-trash me-1"></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </header>
+        
+        <!-- Featured Image -->
+        {% if post.featured_image %}
+            <div class="mb-4">
+                <img src="{{ post.featured_image }}" alt="{{ post.title }}" class="img-fluid featured-image slide-in">
+            </div>
+        {% endif %}
+        
+        <!-- Post Content -->
+        <div class="post-content mb-5">
+            {{ post.content|safe }}
+        </div>
+        
+        <!-- Share Buttons -->
+        <div class="d-flex align-items-center justify-content-center mb-5">
+            <span class="me-3">Share:</span>
+            <a href="https://twitter.com/intent/tweet?url={{ request.url }}&text={{ post.title }}" target="_blank" class="btn btn-sm btn-outline-primary me-2 social-icon">
+                <i class="fab fa-twitter"></i>
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url }}" target="_blank" class="btn btn-sm btn-outline-primary me-2 social-icon">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.url }}&title={{ post.title }}" target="_blank" class="btn btn-sm btn-outline-primary me-2 social-icon">
+                <i class="fab fa-linkedin-in"></i>
+            </a>
+        </div>
+        
+        <!-- Comments Section -->
+        <div class="mt-5 pt-3 border-top">
+            <h3 class="mb-4">Comments ({{ post.comments.count() }})</h3>
+            
+            <!-- Comment Form -->
+            {% if current_user.is_authenticated %}
+                <div class="card mb-4 bg-dark">
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('add_comment', slug=post.slug) }}">
+                            {{ form.hidden_tag() }}
+                            <div class="mb-3">
+                                {{ form.content.label(class="form-label") }}
+                                {% if form.content.errors %}
+                                    {{ form.content(class="form-control is-invalid", rows=3) }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.content.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.content(class="form-control", rows=3, placeholder="Share your thoughts...") }}
+                                {% endif %}
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                {{ form.submit(class="btn btn-primary btn-hover-effect") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center mb-4">
+                    <i class="fas fa-info-circle me-2"></i> Please <a href="{{ url_for('login') }}">login</a> to leave a comment.
+                </div>
+            {% endif %}
+            
+            <!-- Comments List -->
+            {% if post.comments.count() > 0 %}
+                <div class="comments-list">
+                    {% for comment in post.comments %}
+                        <div class="comment stagger-item mb-4">
+                            <div class="d-flex">
+                                <img src="{{ comment.author.avatar }}" alt="{{ comment.author.username }}" class="avatar-sm me-2">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center">
+                                        <h6 class="mb-0">{{ comment.author.username }}</h6>
+                                        <small class="text-muted ms-2">{{ comment.created_at.strftime('%B %d, %Y %H:%M') }}</small>
+                                    </div>
+                                    <p class="mt-2 mb-1">{{ comment.content }}</p>
+                                    
+                                    <!-- Delete comment button (for comment author or post author) -->
+                                    {% if current_user.is_authenticated and (current_user.id == comment.author.id or current_user.id == post.author.id) %}
+                                        <div class="mt-2">
+                                            <form action="{{ url_for('delete_comment', comment_id=comment.id) }}" method="POST" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger delete-confirm">
+                                                    <i class="fas fa-trash-alt me-1"></i> Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-comments fa-3x mb-3 text-muted"></i>
+                    <p>No comments yet. Be the first to comment!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

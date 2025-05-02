@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row fade-in">
+    <div class="col-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>Categories</h1>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('create_category') }}" class="btn btn-primary btn-hover-effect">
+                    <i class="fas fa-plus me-1"></i> New Category
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if categories %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for category in categories %}
+                <div class="col stagger-item">
+                    <div class="card h-100 post-card bg-dark">
+                        <div class="card-body text-center">
+                            <i class="fas fa-folder-open fa-3x mb-3 text-primary"></i>
+                            <h3 class="card-title">{{ category.name }}</h3>
+                            {% if category.description %}
+                                <p class="card-text">{{ category.description }}</p>
+                            {% endif %}
+                            <p class="text-muted">{{ category.posts.count() }} posts</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="{{ url_for('category', category_id=category.id) }}" class="btn btn-outline-light btn-sm w-100">
+                                View Posts
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle me-2"></i> No categories available yet.
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('create_category') }}">Create your first category!</a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

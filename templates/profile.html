@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row fade-in">
+    {% if edit_mode %}
+        <!-- Edit Profile -->
+        <div class="col-md-10 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Edit Profile</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('edit_profile') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-4 mb-md-0">
+                                <img src="{{ current_user.avatar }}" alt="Profile Image" class="avatar mb-3" id="avatarPreview">
+                                <div class="mb-3">
+                                    {{ form.avatar.label(class="form-label") }}
+                                    {% if form.avatar.errors %}
+                                        {{ form.avatar(class="form-control is-invalid", id="avatar") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.avatar.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ form.avatar(class="form-control", id="avatar", placeholder="Avatar URL") }}
+                                    {% endif %}
+                                    <small class="form-text text-muted">URL to your profile image</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    {{ form.username.label(class="form-label") }}
+                                    {% if form.username.errors %}
+                                        {{ form.username(class="form-control is-invalid") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.username.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ form.username(class="form-control") }}
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ form.email.label(class="form-label") }}
+                                    {% if form.email.errors %}
+                                        {{ form.email(class="form-control is-invalid") }}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.email.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ form.email(class="form-control") }}
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ form.bio.label(class="form-label") }}
+                                    {% if form.bio.errors %}
+                                        {{ form.bio(class="form-control is-invalid", rows=4) }}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.bio.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        {{ form.bio(class="form-control", rows=4, placeholder="Tell us about yourself...") }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-3">
+                            <a href="{{ url_for('profile', username=current_user.username) }}" class="btn btn-outline-secondary">Cancel</a>
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- View Profile -->
+        <div class="col-md-4 mb-4">
+            <div class="card bg-dark shadow-sm">
+                <div class="card-body text-center">
+                    <img src="{{ user.avatar }}" alt="{{ user.username }}" class="avatar mb-3">
+                    <h3 class="card-title">{{ user.username }}</h3>
+                    <p class="text-muted">Member since {{ user.created_at.strftime('%B %Y') }}</p>
+                    
+                    {% if user.bio %}
+                        <div class="mt-3">
+                            <h5>About</h5>
+                            <p>{{ user.bio }}</p>
+                        </div>
+                    {% endif %}
+                    
+                    {% if current_user.is_authenticated and current_user.id == user.id %}
+                        <div class="mt-3">
+                            <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary btn-hover-effect">
+                                <i class="fas fa-edit me-1"></i> Edit Profile
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <h2 class="mb-4">{{ user.username }}'s Posts</h2>
+            
+            {% if posts %}
+                <div class="row">
+                    {% for post in posts %}
+                        <div class="col-12 mb-4 stagger-item">
+                            <div class="card bg-dark post-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            {% for category in post.categories %}
+                                                <a href="{{ url_for('category', category_id=category.id) }}" class="badge bg-primary text-decoration-none me-1 category-badge">{{ category.name }}</a>
+                                            {% endfor %}
+                                        </div>
+                                        <small class="text-muted">{{ post.created_at.strftime('%b %d, %Y') }}</small>
+                                    </div>
+                                    
+                                    <h4 class="card-title">
+                                        <a href="{{ url_for('post', slug=post.slug) }}" class="text-decoration-none text-white">{{ post.title }}</a>
+                                    </h4>
+                                    
+                                    {% if post.summary %}
+                                        <p class="card-text">{{ post.summary }}</p>
+                                    {% else %}
+                                        <p class="card-text">{{ post.content|striptags|truncate(200) }}</p>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <a href="{{ url_for('post', slug=post.slug) }}" class="btn btn-sm btn-outline-light btn-hover-effect">Read More</a>
+                                        
+                                        <div class="d-flex align-items-center">
+                                            <i class="far fa-comment me-1"></i>
+                                            <span>{{ post.comments.count() }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i> No posts yet.
+                    {% if current_user.is_authenticated and current_user.id == user.id %}
+                        <a href="{{ url_for('create_post') }}">Create your first post!</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

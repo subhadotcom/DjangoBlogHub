@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    /* TinyMCE customizations */
+    .tox-statusbar__branding {
+        display: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center fade-in">
+    <div class="col-lg-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title mb-0">Create New Post</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="" id="postForm">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <!-- Title -->
+                        <div class="col-md-8 mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {% if form.title.errors %}
+                                {{ form.title(class="form-control is-invalid", id="title") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.title.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.title(class="form-control", id="title", placeholder="Enter post title") }}
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Slug -->
+                        <div class="col-md-4 mb-3">
+                            {{ form.slug.label(class="form-label") }}
+                            {% if form.slug.errors %}
+                                {{ form.slug(class="form-control is-invalid", id="slug") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.slug.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.slug(class="form-control", id="slug", placeholder="post-url-slug") }}
+                            {% endif %}
+                            <small class="form-text text-muted">Will be generated from title if left empty</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Summary -->
+                    <div class="mb-3">
+                        {{ form.summary.label(class="form-label") }}
+                        {% if form.summary.errors %}
+                            {{ form.summary(class="form-control is-invalid", rows=2) }}
+                            <div class="invalid-feedback">
+                                {% for error in form.summary.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.summary(class="form-control", rows=2, placeholder="Brief summary of your post (optional)") }}
+                        {% endif %}
+                        <small class="form-text text-muted">Optional short description that appears in post cards</small>
+                    </div>
+                    
+                    <!-- Featured Image URL -->
+                    <div class="mb-3">
+                        {{ form.featured_image.label(class="form-label") }}
+                        {% if form.featured_image.errors %}
+                            {{ form.featured_image(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.featured_image.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.featured_image(class="form-control", placeholder="https://example.com/image.jpg (optional)") }}
+                        {% endif %}
+                        <small class="form-text text-muted">URL to the main image for your post</small>
+                        
+                        <!-- Image preview -->
+                        <div id="featuredImagePreview" class="mt-2"></div>
+                    </div>
+                    
+                    <!-- Categories -->
+                    <div class="mb-3">
+                        {{ form.categories.label(class="form-label") }}
+                        {% if form.categories.errors %}
+                            {{ form.categories(class="form-select is-invalid", multiple=True) }}
+                            <div class="invalid-feedback">
+                                {% for error in form.categories.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.categories(class="form-select", multiple=True) }}
+                        {% endif %}
+                        <small class="form-text text-muted">Hold Ctrl (or Cmd) to select multiple categories</small>
+                    </div>
+                    
+                    <!-- Content (TinyMCE) -->
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Content</label>
+                        {{ form.content(id="content") }}
+                        {% if form.content.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.content.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Published checkbox -->
+                    <div class="mb-3 form-check">
+                        {{ form.published(class="form-check-input") }}
+                        {{ form.published.label(class="form-check-label") }}
+                    </div>
+                    
+                    <!-- Submit button -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Cancel</a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/editor.js') }}"></script>
+{% endblock %}
