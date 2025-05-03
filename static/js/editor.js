@@ -1,48 +1,43 @@
 // Rich text editor integration for blog post creation/editing
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize TinyMCE on textareas with class "tinymce"
+    // Initialize CKEditor on the content field
     const contentField = document.getElementById('content');
     const postForm = document.getElementById('postForm');
     
     if (contentField) {
-        tinymce.init({
-            selector: '#content',
-            height: 500,
-            menubar: true,
-            plugins: [
-                'advlist autolink lists link image charmap print preview anchor',
-                'searchreplace visualblocks code fullscreen',
-                'insertdatetime media table paste code help wordcount'
-            ],
-            toolbar: 'undo redo | formatselect | ' +
-                'bold italic backcolor | alignleft aligncenter ' +
-                'alignright alignjustify | bullist numlist outdent indent | ' +
-                'removeformat | link image media | help',
-            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
-            skin: 'oxide-dark',
-            content_css: 'dark',
-            setup: function(editor) {
-                // Update the hidden form field with TinyMCE content before form submission
-                editor.on('change', function() {
-                    tinymce.triggerSave();
-                });
+        ClassicEditor
+            .create(contentField, {
+                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', 'insertTable', 'undo', 'redo'],
+                heading: {
+                    options: [
+                        { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+                        { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+                        { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+                        { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
+                    ]
+                }
+            })
+            .then(editor => {
+                // Store editor instance to access it later if needed
+                window.editor = editor;
                 
-                // Also handle image uploads if needed
-                editor.on('init', function() {
-                    editor.getBody().style.backgroundColor = '#2b2b2b';
-                    editor.getBody().style.color = '#f8f9fa';
-                });
-            }
-        });
+                // Update the hidden form field with CKEditor content before form submission
+                if (postForm) {
+                    postForm.addEventListener('submit', function() {
+                        contentField.value = editor.getData();
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('CKEditor initialization error:', error);
+            });
     }
     
     // Handle form submission
     if (postForm) {
         postForm.addEventListener('submit', function(e) {
-            // Make sure TinyMCE content is saved to the form field
-            tinymce.triggerSave();
-            
+            // Content validation already handled by CKEditor integration
             // Validate content (prevent empty posts)
             const content = contentField.value.trim();
             if (!content) {

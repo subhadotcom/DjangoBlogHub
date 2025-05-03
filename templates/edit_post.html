@@ -2,9 +2,14 @@
 
 {% block head %}
 <style>
-    /* TinyMCE customizations */
-    .tox-statusbar__branding {
-        display: none !important;
+    /* CKEditor customizations */
+    .ck-editor__editable {
+        min-height: 400px;
+        background-color: #2b2b2b !important;
+        color: #f8f9fa !important;
+    }
+    .ck-content {
+        font-size: 1.1em;
     }
 </style>
 {% endblock %}
@@ -102,7 +107,7 @@
                         <small class="form-text text-muted">Hold Ctrl (or Cmd) to select multiple categories</small>
                     </div>
                     
-                    <!-- Content (TinyMCE) -->
+                    <!-- Content (CKEditor) -->
                     <div class="mb-3">
                         <label for="content" class="form-label">Content</label>
                         {{ form.content(id="content") }}
